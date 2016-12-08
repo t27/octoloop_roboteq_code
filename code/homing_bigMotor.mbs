@@ -1,0 +1,44 @@
+
+' Home search
+' Apply 50% reverse in open loop power until home switch is activated
+' then change to Closed Loop Count Position mode
+' Initial steps done at script startup
+
+print("starting ... \r")
+setcommand(_VAR, 1, 1) ' initialise the flag to 1, hence auto home when starting
+mainloop:
+'read value of variable no 1, ie the homing flag
+home_flag = getvalue(_VAR, 1)
+
+if (home_flag <> 1)
+	' Start homing routine
+	GoSub homing_routine
+end if
+' set the home flag variable to 0
+setcommand(_VAR, 1, 0)
+goto mainloop
+
+homing_routine:
+   	setconfig(_MMOD, 1, 0)
+	setcommand(_G, 1, 200)
+	' Loop until we reach home
+	top:
+	setcommand(_G, 1, 200)
+	wait(2)
+	valu = getvalue(_CR, 1)'Reading the Relative Count (count difference)
+	if (valu < 0) 'If the diff is negative, we have reached the home(since the counter is bieng reset by index pulse)
+		print("Home Done=",valu)
+		counter = getvalue(_C, 1) ' read actual counter position
+		print(counter)
+		setcommand(_P, 1, counter) ' make current position become destination so that the motor doesnt move
+		setconfig(_MMOD, 1, 3) ' Switch to closed loop encoder count mode
+		terminate
+	else
+	    ' Not homed yet
+		print(valu, "\n")
+		wait(5)
+		goto top
+	end if
+
+
+

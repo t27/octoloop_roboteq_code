@@ -1,0 +1,72 @@
+
+
+GoSub HOMING
+setconfig(_MMOD, 1, 3)
+wait(5)
+THRES = 8
+prev_err = 0
+err=0
+delta_count=0
+setcommand(_P, 1, 2000)
+top:
+prev_err = err
+err = getvalue(_E,1)
+'if (Abs(amps) >= THRES)
+'	print ("AMP>THR")
+'	if (amps > 0)
+'	  setcommand(_PR, 1, 50)
+'	else
+'	  setcommand(_PR, 1, -50)
+'	End If
+'End If
+LOAD_THRES = 5
+diff = prev_err-err
+If (Abs(diff) > 0)
+    print("D.Err=",diff,",",delta_count,"\n")
+    If(diff > 0) 
+    	delta_count++
+	Elseif (diff < 0)
+		delta_count--
+	End If
+
+	If (delta_count > LOAD_THRES)
+		print("Pos")
+'		setcommand(_PR, 1, 50)
+'		wait(10)
+	ElseIf (delta_count < -LOAD_THRES)
+		print("neg")
+'		setcommand(_PR, 1, -50)
+'		wait(10)
+	End If
+  ' increase the delta counter and if the delta is X for 10 cycles, calculate direction and move 50 counts and wait 10ms
+Else
+	delta_count = 0
+End If
+wait(10)
+goto top
+
+
+HOMING:
+	print("starting ... \r")
+
+	setconfig(_MMOD, 1, 0)
+	setcommand(_G, 1, 200)
+	' Loop until we reach home
+	loop1:
+	setcommand(_G, 1, 200)
+	valu = getvalue(_CR, 1)'Reading the Relative Count (count difference)
+	if (valu < 0) 'If the diff is negative, we have reached the home(since the counter is bieng reset by index pulse)
+
+		print("Home Done=",valu)
+		counter = getvalue(_C, 1) ' read actual counter position
+		print(counter)
+		setcommand(_P, 1, counter) ' make current position become destination so that the motor doesnt move
+		setconfig(_MMOD, 1, 3) ' Switch to closed loop encoder count mode
+		return
+	else
+	    ' Not homed yet
+		print(valu, "\n")
+		wait(5)
+		goto loop1
+	end if
+return
