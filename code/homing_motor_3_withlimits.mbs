@@ -13,6 +13,7 @@
 ' Hence if the home was crossed, the CR will be negative. 
 ' So if CR is negative stop, else keep giving the motor command and keep checking CR 
 
+' TODO: Add variable homing speed by using homing flag as speed value
 print("starting ... \r")
 setcommand(_VAR, 1, 0) ' initialise the flag to 0, hence no auto home when starting
 mainloop:
@@ -32,11 +33,11 @@ homing_routine:
    	setconfig(_MMOD, 1, 0)
 	' Loop until we reach home
 	stillhoming:
-	setcommand(_G, 1, 100) ' the value here is proportional to the motor speed(vary according to motor, 100 for small, 200 for big), can increase this
+	setcommand(_G, 1, -10 0) ' the value here is proportional to the motor speed(vary according to motor, 100 for small, 200 for big), can increase this
 	wait(2)
 	valu = getvalue(_CR, 1)'Reading the Relative Count (count difference)
-	if (valu < 0) 'If the diff is negative, we have reached the home(since the counter is bieng reset by index pulse)
-		print("Home Done\n")
+	if (valu > 0) 'If the diff is positive(for 3 motor), we have reached the home(since the counter is bieng reset by index pulse)
+		print(valu,"Home Done\n")
 		counter = getvalue(_C, 1) ' read actual counter position
 		print(counter)
 		setcommand(_P, 1, counter) ' make current position become destination so that the motor doesnt move
