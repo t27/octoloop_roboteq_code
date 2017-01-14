@@ -32,13 +32,13 @@ homing_routine:
    	setconfig(_MMOD, 1, 0)
 	' Loop until we reach home
 	stillhoming:
-	setcommand(_G, 1, 100) ' the value here is proportional to the motor speed(vary according to motor, 100 for small, 200 for big), can increase this
+	setcommand(_G, 1, -100) ' the value here is proportional to the motor speed(vary according to motor, 100 for small, 200 for big), can increase this
 	wait(2)
 	valu = getvalue(_CR, 1)'Reading the Relative Count (count difference)
-	if (valu < 0) 'If the diff is negative, we have reached the home(since the counter is bieng reset by index pulse)
+	if (valu > 0) 'If the diff is positive, we have reached the home(since the counter is bieng reset by index pulse)
 		print("Home Done\n")
 		counter = getvalue(_C, 1) ' read actual counter position
-		print(counter)
+		'print(counter)
 		setcommand(_P, 1, counter) ' make current position become destination so that the motor doesnt move
 		setconfig(_MMOD, 1, 3) ' Switch to closed loop encoder count mode
 		setcommand(_P, 1, 0)
